@@ -53,7 +53,7 @@ import psutil
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from statsmodels.tsa.stattools import acf
 def auto_ar_predict(X, max_lag=50, criterion='aic'):
     X = np.asarray(X).flatten()
     best_score = np.inf
@@ -1138,5 +1138,6 @@ def update_new_bin1(old_bin):
     ind_min = np.append(np.arange(begin, last, step = 1), last)
     update_bin = ind_min*7500
     return(update_bin)
+
 
 
