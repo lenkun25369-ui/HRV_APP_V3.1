@@ -11,7 +11,7 @@ from shock_rate import predict_shock
 # UI Header
 # =========================================
 st.title("SHIELD")
-st.caption("HRV Sepsis Early Warning System Powerd by AI")
+st.caption("HRV Sepsis Early Warning System Powered by AI")
 
 risk_placeholder = st.empty()
 ecg_hrv_placeholder = st.empty()
@@ -25,8 +25,8 @@ obs_q   = qp.get("obs", [""])[0]
 # =========================================
 @st.cache_resource
 def _check_models_exist():
-    assert os.path.exists("models/model_focalloss.h5"), "Missing models/model_focalloss.h5"
-    assert os.path.exists("models/xgb_model.json"), "Missing models/xgb_model.json"
+    assert os.path.exists("models/model_focalloss.h5")
+    assert os.path.exists("models/xgb_model.json")
 
 _check_models_exist()
 
@@ -67,10 +67,9 @@ if st.session_state.analysis_key != current_key:
     for k in [
         "analysis_done", "obs", "ecg_signal", "hrv_df", "preds",
         "risk_pct", "risk_label", "risk_color", "hr_signal",
-        "ecg_download_path"
+        "ecg_download_path", "h0_download_path"
     ]:
-        if k in st.session_state:
-            del st.session_state[k]
+        st.session_state.pop(k, None)
     st.session_state.analysis_key = current_key
 
 # =========================================
@@ -82,7 +81,6 @@ if token and obs_url:
         try:
             with st.spinner("Fetching Patient Data..."):
                 obs = fetch_observation(token, obs_url)
-
             st.session_state.obs = obs
 
             with tempfile.TemporaryDirectory() as td:
@@ -101,26 +99,21 @@ if token and obs_url:
                         text=True
                     )
                     if proc.returncode != 0:
-                        raise RuntimeError(proc.stderr or "parse_fhir_ecg_to_csv.py failed")
+                        raise RuntimeError(proc.stderr)
 
-                    if not os.path.exists(ecg_csv):
-                        raise RuntimeError("ECG CSV not created")
-
-                    ecg_df = pd.read_csv(ecg_csv, header=None)
+                    ecg_df = pd.read_csv(ecg_csv)
                     ecg_signal = (
                         pd.to_numeric(ecg_df.iloc[:, 0], errors="coerce")
                         .dropna()
-                        .to_numpy(dtype=float)
+                        .to_numpy()
                         .ravel()
                     )
-                    if ecg_signal.size == 0:
-                        raise RuntimeError("ECG signal empty")
 
-                # ===== COPY FOR DOWNLOAD (關鍵修正) =====
-                download_path = os.path.join(os.getcwd(), "ECG_5min.csv")
-                shutil.copy(ecg_csv, download_path)
-                st.session_state.ecg_download_path = download_path
-                # =======================================
+                # ===== COPY ECG CSV FOR DOWNLOAD =====
+                ecg_dl = os.path.join(os.getcwd(), "ECG_5min.csv")
+                shutil.copy(ecg_csv, ecg_dl)
+                st.session_state.ecg_download_path = ecg_dl
+                # ====================================
 
                 # ----- Generate HRV Features -----
                 with st.spinner("Generating HRV features..."):
@@ -130,10 +123,16 @@ if token and obs_url:
                         text=True
                     )
                     if proc.returncode != 0:
-                        raise RuntimeError(proc.stderr or "generate_HRV_10_features.py failed")
+                        raise RuntimeError(proc.stderr)
 
                     h0_json = proc.stdout.splitlines()[-1]
                     hrv_df = pd.read_json(h0_json, orient="records")
+
+                # ===== COPY h0 CSV FOR DOWNLOAD =====
+                h0_dl = os.path.join(os.getcwd(), "h0.csv")
+                shutil.copy(h0_csv, h0_dl)
+                st.session_state.h0_download_path = h0_dl
+                # ===================================
 
                 # ----- Predict Shock Risk -----
                 with st.spinner("Predicting shock risk..."):
@@ -168,7 +167,7 @@ if token and obs_url:
     # =========================================
     with patient_data_placeholder.container():
         with st.expander("Patient Data (Click to Expand)", expanded=False):
-            st.json(st.session_state.get("obs", {}))
+            st.json(st.session_state.obs)
 
     # =========================================
     # Risk Visualization
@@ -178,35 +177,42 @@ if token and obs_url:
     risk_color = st.session_state.risk_color
 
     with risk_placeholder.container():
-        pie_col, value_col = st.columns([1, 2], gap="large")
+        pie_col, value_col = st.columns([1, 2])
         with pie_col:
             components.html(
-                f"""
-                <div style="width:120px;height:120px;border-radius:50%;
-                background:conic-gradient({risk_color} {risk_pct}%,#2c2c2c 0);">
-                </div>
-                """,
+                f"<div style='width:120px;height:120px;border-radius:50%;"
+                f"background:conic-gradient({risk_color} {risk_pct}%,#333 0);'></div>",
                 height=140,
             )
         with value_col:
             st.markdown(
-                f"<h1>{risk_pct:.2f}%</h1><h3 style='color:{risk_color}'>{risk_label}</h3>",
+                f"<h1>{risk_pct:.2f}%</h1>"
+                f"<h3 style='color:{risk_color}'>{risk_label}</h3>",
                 unsafe_allow_html=True,
             )
 
     # =========================================
-    # Download ECG CSV (修好版)
+    # Download Section
     # =========================================
     st.markdown("---")
-    st.subheader("Download Raw ECG")
+    st.subheader("Download Results")
 
     if "ecg_download_path" in st.session_state:
         with open(st.session_state.ecg_download_path, "rb") as f:
             st.download_button(
                 "⬇️ Download ECG_5min.csv",
-                data=f,
-                file_name="ECG_5min.csv",
-                mime="text/csv"
+                f,
+                "ECG_5min.csv",
+                "text/csv"
+            )
+
+    if "h0_download_path" in st.session_state:
+        with open(st.session_state.h0_download_path, "rb") as f:
+            st.download_button(
+                "⬇️ Download h0.csv",
+                f,
+                "h0.csv",
+                "text/csv"
             )
 
     # =========================================
@@ -216,16 +222,11 @@ if token and obs_url:
         st.markdown("---")
         st.subheader("ECG Input")
 
-        ecg_signal = st.session_state.ecg_signal
-        hr = np.asarray(ecg_signal)
-        n = len(hr)
-
-        start = st.slider("View start index", 0, max(0, n - 500), 0)
-        win = hr[start:start + 500]
+        sig = st.session_state.ecg_signal
+        start = st.slider("View start index", 0, max(0, len(sig) - 500), 0)
 
         fig, ax = plt.subplots(figsize=(10, 3))
-        ax.plot(win)
-        ax.set_title("ECG (index-based)")
+        ax.plot(sig[start:start + 500])
         ax.grid(alpha=0.3)
         st.pyplot(fig)
         plt.close(fig)
