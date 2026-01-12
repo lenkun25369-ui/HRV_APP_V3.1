@@ -10,7 +10,7 @@ from keras import backend as K
 from keras.models import load_model
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.preprocessing import RobustScaler
-import matplotlib.pyplot as plt
+#import#import matplotlib.pyplot
 from scipy.signal import resample
 import glob
 import pywt
@@ -19,7 +19,7 @@ import neurokit2 as nk
 import csv
 from collections import Counter
 import warnings
-from IPython.display import display
+
 import shutil
 import posixpath
 import pyhrv
@@ -38,7 +38,6 @@ import scipy.signal
 from biosppy.signals import ecg
 import gc
 import bz2
-from statsmodels.tsa.stattools import acf
 gc.enable()
 pd.set_option('display.max_colwidth', None)
 fs = 125
@@ -50,7 +49,7 @@ after = 110
 tol = 0.05
 cpuCount = os.cpu_count() 
 import psutil
-import cv2
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -1139,4 +1138,5 @@ def update_new_bin1(old_bin):
     ind_min = np.append(np.arange(begin, last, step = 1), last)
     update_bin = ind_min*7500
     return(update_bin)
+
 
