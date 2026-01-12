@@ -255,6 +255,7 @@ h0 = h0.iloc[1:]
 h0.to_csv("h0.csv", index=False)
 h0.to_csv(sys.argv[2], index=False)
 print(h0.to_json(orient="records"))
+print(h0)
 # In[19]:
 
 
