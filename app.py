@@ -230,7 +230,19 @@ if token and obs_url:
                 """,
                 unsafe_allow_html=True,
             )
-
+    # =========================================
+    # Download ECG CSV
+    # =========================================
+    st.markdown("---")
+    st.subheader("Download Raw ECG")
+    
+    with open(ecg_csv, "rb") as f:
+        st.download_button(
+            label="⬇️ Download ECG_5min.csv",
+            data=f,
+            file_name="ECG_5min.csv",
+            mime="text/csv"
+        )
     # =========================================
     # ECG Input & HRV Features
     # =========================================
