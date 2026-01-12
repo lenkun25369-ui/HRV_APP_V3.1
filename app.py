@@ -277,7 +277,7 @@ if token and obs_url:
             fig, ax = plt.subplots(figsize=(10, 3))
             ax.plot(x_win, hr_win, linewidth=1)
             ax.set_title("Heart Rate (index-based view)")
-            ax.set_xlabel("Index(125HZ)")
+            ax.set_xlabel("Index(125Hz)")
             ax.set_ylabel("Voltage(mV)")
             ax.set_xlim(start_idx, end_idx)
             ax.set_ylim(ymin - pad, ymax + pad)
