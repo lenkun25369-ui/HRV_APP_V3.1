@@ -6,12 +6,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from shock_rate import predict_shock
-with open("package_versions.txt") as f:
-    st.download_button(
-        "Download package versions",
-        f.read(),
-        file_name="package_versions.txt"
-    )
+# with open("package_versions.txt") as f:
+#     st.download_button(
+#         "Download package versions",
+#         f.read(),
+#         file_name="package_versions.txt"
+#     )
 # =========================================
 # UI Header
 # =========================================
