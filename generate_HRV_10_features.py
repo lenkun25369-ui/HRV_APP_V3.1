@@ -144,7 +144,6 @@ def ECGgrid(data, timelag1=600, timelag2=1200, nrows=40, ncols=40):
 
 ECG_grid_func_r = ECGgrid
 
-
 # In[6]:
 
 
@@ -180,7 +179,6 @@ settings_nonlinear = {
     'dim': 2,                   # Sample entropy embedding dimension
     'tolerance': None           # Tolerance distance for which the vectors to be considered equal (None sets default values)
 }
-
 
 # In[7]:
 
@@ -221,7 +219,7 @@ new_bin0 = np.delete(bin0, index)
 check=[]
 
 for i in new_bin0: 
-            
+        try:
             warnings.filterwarnings("ignore")
             index = np.append(np.arange((i/step0-1)*step0+1, i, step = 1),i)
             index =index.astype(int)-1
@@ -246,6 +244,8 @@ for i in new_bin0:
             hrvpart = pd.concat([hrvpart0, hrvpart], axis=1)
             h0 = pd.concat([h0,hrvpart], ignore_index=True)
 
+        except:
+            continue
 h0 = h0.iloc[1:]
 
 
