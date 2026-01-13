@@ -128,7 +128,7 @@ if token and obs_url:
                 # ----- Generate HRV Features -----
                 with st.spinner("Generating HRV features..."):
                     proc = subprocess.run(
-                        ["python", "generate_HRV_10_features.py", ecg_csv, h0_csv],
+                        ["python", "generate_HRV_10_features (6).py", ecg_csv, h0_csv],
                         capture_output=True,
                         text=True
                     )
